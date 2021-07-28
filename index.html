@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ja">
+ <head>
+   <meta charset="utf-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <link rel="stylesheet" href="index.css">
+   <link rel="icon" type="img/x-icon" href="img/bennkyou.ico">
+   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jkanban@1.3.1/dist/jkanban.min.css"/>
+   <script src="https://cdn.jsdelivr.net/npm/jkanban@1.3.1/dist/jkanban.min.js"></script>
+   <style>
+       #download {
+         display: none;
+         width: 100px;
+         margin: 15px;
+         text-align: center;
+         background-color: white;
+         border: 1px solid black;
+         cursor: pointer;
+         text-decoration: none;
+       }
+
+
+
+   </style>
+
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>勉強活動</title>
+ </head>
+
+  <body>
+    <div class="container1">
+
+      <nav class="nav">
+
+       <ul>
+         <li><a href="#home">勉強習慣</a></li>
+         <li><a href="#zone">勉強集中</a></li>
+         <li><a href="#way">勉強方法</a></li>
+         <li><a href="#back">勉強進捗</a></li>
+
+       </ul>
+     </nav>
+
+     <section id="home">
+          <h1>勉強習慣</h1>
+          <br>
+
+          <p>ずっと習慣化するのが一番大変だと思っていましたが、<br>
+            実は習慣化するのが一番楽だったと気付きました。</p><br>
+          <p>勉強を習慣化するために少しでもできることからやってみようと思います。</p>
+
+     </section>
+
+        <section id="zone">
+          <h1>勉強集中</h1>
+          <p>集中できない時は、ポモドーロテクニックを活用して勉強しています。</p>
+          <br>
+          <div class="container">
+              <div id = "timer">00:00.000</div>
+              <div class="controls">
+              <div class="btn" id="start">Start</div>
+              <div class="btn" id="stop">Stop</div>
+              <div class="btn" id="reset">Reset</div>
+              </div>
+             </div>
+
+             <script src="js/main.js"></script>
+
+        </section>
+
+        <section id="way">
+          <h1>勉強方法</h1>
+          <br>
+          <p>私は、基本情報技術者試験の取得を目指しています。</p>
+          <p>「ずるい暗記術」という本を読んで、この方法で試験勉強を頑張ろうと思いました。</p>
+          <p>勉強する際、答えを見る→問題を見る→解説を読むという方法です。</p>
+          <br>
+
+        </section>
+
+        <section id="back">
+          <h1>勉強進捗</h1>
+          <p>進捗を可視化して勉強を習慣化したいと思います。（アイビー・リー・メソッド）</p>
+   <form name="wrap">
+     <input type="button" name="new" value="新規作成"/>
+     <input type="file" name="import"/>
+   </form>
+   <a id="download" download="sample.json">ダウンロード</a>
+   <div id="kanban"></div>
+
+   <script>
+
+     let data = [
+       {id:'board-0', title:'すること'},
+       {id:'board-1', title:'進行中'},
+       {id:'board-2', title:'完了'}
+     ];
+     let taskid = 0;
+     let kanban;
+
+     document.forms.wrap.new.addEventListener('click', createKanban);
+     document.forms.wrap.import.addEventListener('change', importFile);
+     document.getElementById('download').addEventListener('click', downloadJSON);
+
+     function createKanban() {
+       kanban = new jKanban({
+         element: '#kanban',
+         boards: data,
+         itemAddOptions: {
+           enabled: true,
+           content: '追加'
+         },
+
+         click: element => kanban.removeElement(element.dataset.eid),
+         buttonClick: (element, id) => addTask(id)
+       });
+
+
+       idCheck(data);
+
+       document.forms.wrap.style.display = 'none';
+       document.getElementById('download').style.display = 'block';
+     }
+
+
+     function idCheck(data) {
+       data.forEach(list => {
+         if(!list.item) return;
+
+
+         taskid += list.item.length;
+       })
+     }
+
+     function importFile(event) {
+       const reader = new FileReader();
+
+       reader.readAsText(event.target.files[0]);
+       reader.onload = () => {
+
+         data = JSON.parse(reader.result);
+         createKanban();
+       }
+
+     }
+
+     function downloadJSON() {
+       const blobData = new Blob([JSON.stringify(createDATA())], {type:'application/json'});
+
+       document.getElementById('download').href = window.URL.createObjectURL(blobData);
+     }
+
+     function createDATA() {
+       const jkanbanData = [];
+
+       for(let i=0; i<data.length; i++) {
+         const boardLists = {
+           id: data[i].id,
+           title: data[i].title,
+           item: []
+         }
+
+         kanban.getBoardElements(data[i].id).forEach(item => {
+           boardLists.item.push({
+             id: item.dataset.eid,
+             title: item.textContent
+           });
+         })
+         jkanbanData.push(boardLists);
+       }
+       return jkanbanData;
+     }
+
+
+     function addTask(id) {
+       const task = document.createElement('input');
+
+       kanban.addForm(id, task);
+       task.focus();
+
+       task.addEventListener('blur', e => {
+         kanban.addElement(id, {id:`item-${taskid++}`, title:e.target.value});
+         task.remove();
+       })
+
+     }
+   </script>
+
+
+        </section>
+
+
+   <script src="https://cdn.jsdelivr.net/gh/cferdinandi/smooth-scroll@15.0.0/dist/smooth-scroll.polyfills.min.js"></script>
+
+      <script>
+        const scroll = new SmoothScroll('.navbar a[href*="#"]', {
+          speed: 800,
+        });
+      </script>
+
+ </body>
+</html>
